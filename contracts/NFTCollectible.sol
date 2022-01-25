@@ -12,9 +12,9 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
 
     Counters.Counter private _tokenIds;
 
-    uint public constant MAX_SUPPLY = 100; // максимальное количество NFT, которое может быть в коллекции
-    uint public constant PRICE = 0.01 ether; // количество эфира, необходимое для покупки 1 NFT
-    uint public constant MAX_PER_MINT = 5; // макс. кол-во NFT, которые можно выпускать за раз
+    uint public constant MAX_SUPPLY = 100;
+    uint public constant PRICE = 0.01 ether;
+    uint public constant MAX_PER_MINT = 5;
 
     string public baseTokenURI;
 
@@ -24,7 +24,9 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
 
     function reserveNFTs() public onlyOwner {
         uint totalMinted = _tokenIds.current();
-        require(totalMinted.add(10) < MAX_SUPPLY, "Not enough NFTs");
+
+        require(totalMinted.add(10) < MAX_SUPPLY, "Not enough NFTs left to reserve");
+
         for (uint i = 0; i < 10; i++) {
             _mintSingleNFT();
         }
@@ -40,9 +42,11 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
 
     function mintNFTs(uint _count) public payable {
         uint totalMinted = _tokenIds.current();
-        require(totalMinted.add(_count) <= MAX_SUPPLY, "Not enough NFTs");
-        require(_count > 0 && _count <= MAX_PER_MINT, "Connot mint specified number of NFTs");
-        require(msg.value >= PRICE.mul(_count), "Not enough ether to purchase NFTs");
+
+        require(totalMinted.add(_count) <= MAX_SUPPLY, "Not enough NFTs left!");
+        require(_count >0 && _count <= MAX_PER_MINT, "Cannot mint specified number of NFTs.");
+        require(msg.value >= PRICE.mul(_count), "Not enough ether to purchase NFTs.");
+
         for (uint i = 0; i < _count; i++) {
             _mintSingleNFT();
         }
@@ -55,8 +59,10 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
     }
 
     function tokensOfOwner(address _owner) external view returns (uint[] memory) {
+
         uint tokenCount = balanceOf(_owner);
         uint[] memory tokensId = new uint256[](tokenCount);
+
         for (uint i = 0; i < tokenCount; i++) {
             tokensId[i] = tokenOfOwnerByIndex(_owner, i);
         }
@@ -66,7 +72,9 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
     function withdraw() public payable onlyOwner {
         uint balance = address(this).balance;
         require(balance > 0, "No ether left to withdraw");
-        (bool success, ) = (msg.sender).call{value:balance}("");
-        require(success, "Transfer failed");
+
+        (bool success, ) = (msg.sender).call{value: balance}("");
+        require(success, "Transfer failed.");
     }
+
 }
